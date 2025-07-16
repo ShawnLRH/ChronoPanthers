@@ -29,8 +29,6 @@ import static com.example.chronopanthers.SQliteConnection.*;
 
 public class Controller implements Initializable {
     @FXML
-    private ProgressBar progressBar;
-    @FXML
     private Spinner<Integer> workDurationInput, breakDurationInput;
     @FXML
     private Button playButton, pauseButton, resetButton, applySettingsButton;
@@ -140,7 +138,7 @@ public class Controller implements Initializable {
 
     private void loadSessionCounts() {
         if (currentUsername != null) {
-            int[] counts = getSessionCounts(currentUsername);
+            int[] counts = SQliteConnection.getSessionCounts(currentUsername);
             workSessions = counts[0];
             breakSessions = counts[1];
             workSessionsDisplay.setText(String.valueOf(workSessions));
