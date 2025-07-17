@@ -44,6 +44,7 @@ public class AIAgentController implements Initializable {
     private String currentUsername;
     private AIService aiService;
     private List<com.example.chronopanthers.Task> userTasks;
+    private Stage stage;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -359,11 +360,13 @@ public class AIAgentController implements Initializable {
         Parent root = loader.load();
 
         Controller timerController = loader.getController();
+        Stage stage = getStageFromEvent(event);
+        timerController.setStage(stage);
         if (currentUsername != null) {
             timerController.setCurrentUser(currentUsername);
         }
 
-        Stage stage = getStageFromEvent(event);
+
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/timer.css").toExternalForm());
         stage.setTitle("Pomodoro Timer");
@@ -378,11 +381,13 @@ public class AIAgentController implements Initializable {
         Parent root = loader.load();
 
         TaskManager taskManagerController = loader.getController();
+        Stage stage = getStageFromEvent(event);
+        taskManagerController.setStage(stage);
         if (currentUsername != null) {
             taskManagerController.setCurrentUser(currentUsername);
         }
 
-        Stage stage = getStageFromEvent(event);
+
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/taskManager.css").toExternalForm());
         stage.setTitle("Task Manager");
@@ -399,6 +404,7 @@ public class AIAgentController implements Initializable {
         alert.setContentText("Your chat history will be cleared. Continue?");
 
         if(alert.showAndWait().get() == ButtonType.OK){
+            TimerManager.getInstance().reset();
             Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
             Stage stage = getStageFromEvent(event);
             Scene scene = new Scene(root);
@@ -416,11 +422,12 @@ public class AIAgentController implements Initializable {
         Parent root = loader.load();
 
         Productivity controller = loader.getController();
+        Stage stage = getStageFromEvent(event);
+        controller.setStage(stage);
         if (currentUsername != null) {
             controller.setCurrentUsername(currentUsername);
         }
 
-        Stage stage = getStageFromEvent(event);
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/productivity.css").toExternalForm());
         stage.setTitle("Productivity Tracker");
@@ -444,6 +451,39 @@ public class AIAgentController implements Initializable {
         } else {
             // Fallback - try to get from any node in the scene
             throw new IllegalArgumentException("Unable to determine stage from event source: " + source.getClass());
+        }
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+
+        this.stage.setOnCloseRequest(event -> {
+            event.consume(); // prevent window from closing
+            handleLogoutRequest(); // show the confirmation dialog
+        });
+    }
+
+    private void handleLogoutRequest() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("You're about to logout!");
+        alert.setContentText("Have you completed all your work?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            TimerManager.getInstance().reset();
+
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/loginPage.css").toExternalForm());
+
+                stage.setTitle("Login Page");
+                stage.setScene(scene);
+                stage.setResizable(false);
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

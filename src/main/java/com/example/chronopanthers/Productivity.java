@@ -144,8 +144,8 @@ public class Productivity implements Initializable {
             series.getData().add(new XYChart.Data<>(label, count));
         }
 
-        durationChart.getData().clear();
-        durationChart.getData().add(series);
+        taskChart.getData().clear();
+        taskChart.getData().add(series);
 
         resetTaskAxis("Months", months, 90);
     }
@@ -364,12 +364,14 @@ public class Productivity implements Initializable {
 
         // Get the TaskManager controller and set the current user
         Controller controller = loader.getController();
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
         //controller.setCurrentUser(currentUsername);
+        controller.setStage(stage);
         if (currentUsername != null) {
             controller.setCurrentUser(currentUsername);
         }
 
-        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/timer.css").toExternalForm());
         stage.setTitle("Timer");
@@ -384,13 +386,14 @@ public class Productivity implements Initializable {
         Parent root = loader.load();
 
         // Get the TaskManager controller and set the current user
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
         TaskManager controller = loader.getController();
+        controller.setStage(stage);
         //controller.setCurrentUser(currentUsername);
         if (currentUsername != null) {
             controller.setCurrentUser(currentUsername);
         }
 
-        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/taskManager.css").toExternalForm());
         stage.setTitle("Task Manager");
@@ -407,11 +410,13 @@ public class Productivity implements Initializable {
         // Get the TaskManager controller and set the current user
         AIAgentController controller = loader.getController();
         //controller.setCurrentUser(currentUsername);
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+        controller.setStage(stage);
         if (currentUsername != null) {
             controller.setCurrentUser(currentUsername);
         }
 
-        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/AIAgent.css").toExternalForm());
         stage.setTitle("AI Study Assistant");
@@ -427,6 +432,7 @@ public class Productivity implements Initializable {
         alert.setContentText("Have you completed all your work?");
 
         if(alert.showAndWait().get() == ButtonType.OK){
+            TimerManager.getInstance().reset();
             Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
             stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
             scene = new Scene(root);
@@ -435,6 +441,40 @@ public class Productivity implements Initializable {
             stage.setScene(scene);
             stage.setResizable(false);
             stage.show();
+        }
+    }
+
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+
+        this.stage.setOnCloseRequest(event -> {
+            event.consume(); // prevent window from closing
+            handleLogoutRequest(); // show the confirmation dialog
+        });
+    }
+
+    private void handleLogoutRequest() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("You're about to logout!");
+        alert.setContentText("Have you completed all your work?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            TimerManager.getInstance().reset();
+
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/loginPage.css").toExternalForm());
+
+                stage.setTitle("Login Page");
+                stage.setScene(scene);
+                stage.setResizable(false);
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

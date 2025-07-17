@@ -168,13 +168,13 @@ public class Controller implements Initializable {
     private Scene scene;
 
     public void logout(ActionEvent event) throws IOException {
-        TimerManager.getInstance().reset();
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Logout");
         alert.setHeaderText("You're about to logout!");
         alert.setContentText("Have you completed all your work?");
         if (alert.showAndWait().get() == ButtonType.OK) {
+            TimerManager.getInstance().reset();
             Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
             stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
             scene = new Scene(root);
@@ -190,10 +190,11 @@ public class Controller implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("taskManager.fxml"));
         Parent root = loader.load();
         TaskManager taskManagerController = loader.getController();
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+        taskManagerController.setStage(stage);
         if (currentUsername != null) {
             taskManagerController.setCurrentUser(currentUsername);
         }
-        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/taskManager.css").toExternalForm());
         stage.setTitle("Task Manager");
@@ -206,10 +207,11 @@ public class Controller implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("aiAgent.fxml"));
         Parent root = loader.load();
         AIAgentController aiController = loader.getController();
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+        aiController.setStage(stage);
         if (currentUsername != null) {
             aiController.setCurrentUser(currentUsername);
         }
-        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/aiAgent.css").toExternalForm());
         stage.setTitle("AI Study Assistant");
@@ -222,15 +224,49 @@ public class Controller implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("productivity.fxml"));
         Parent root = loader.load();
         Productivity productivity = loader.getController();
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+        productivity.setStage(stage);
         if (currentUsername != null) {
             productivity.setCurrentUsername(currentUsername);
         }
-        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/productivity.css").toExternalForm());
         stage.setTitle("Productivity Tracker");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
+    }
+
+    public void setStage(Stage stage) {
+        this.stage = stage;
+
+        this.stage.setOnCloseRequest(event -> {
+            event.consume(); // prevent window from closing
+            handleLogoutRequest(); // show the confirmation dialog
+        });
+    }
+
+    private void handleLogoutRequest() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("You're about to logout!");
+        alert.setContentText("Have you completed all your work?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            TimerManager.getInstance().reset();
+
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/loginPage.css").toExternalForm());
+
+                stage.setTitle("Login Page");
+                stage.setScene(scene);
+                stage.setResizable(false);
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

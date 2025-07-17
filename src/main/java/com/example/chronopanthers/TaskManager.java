@@ -62,6 +62,8 @@ public class TaskManager implements Initializable {
     private ObservableList<Task> tasks = FXCollections.observableArrayList();
     private String currentUsername;
     private FilteredList<Task> filteredTasks;
+    private Stage stage;
+    private Scene scene;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -369,9 +371,6 @@ public class TaskManager implements Initializable {
         loadUserTasks();
     }
 
-    private Stage stage;
-    private Scene scene;
-    private Parent root;
 
     public void timer(ActionEvent event) throws IOException {
         // Load the timer page with the current user
@@ -380,11 +379,13 @@ public class TaskManager implements Initializable {
 
         // Pass the current user to the timer controller
         Controller timerController = loader.getController();
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+        timerController.setStage(stage);
         if (currentUsername != null) {
             timerController.setCurrentUser(currentUsername);
         }
 
-        stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
         scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/timer.css").toExternalForm());
         stage.setTitle("Timer");
@@ -393,20 +394,89 @@ public class TaskManager implements Initializable {
         stage.show();
     }
 
-    @FXML
+    public void setStage(Stage stage) {
+        this.stage = stage;
+
+        this.stage.setOnCloseRequest(event -> {
+            event.consume(); // prevent window from closing
+            handleLogoutRequest(); // show the confirmation dialog
+        });
+    }
+
+    private void handleLogoutRequest() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("You're about to logout!");
+        alert.setContentText("Have you completed all your work?");
+
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            TimerManager.getInstance().reset();
+
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/loginPage.css").toExternalForm());
+
+                stage.setTitle("Login Page");
+                stage.setScene(scene);
+                stage.setResizable(false);
+                stage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void logout(ActionEvent event) throws IOException {
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Logout");
+        alert.setHeaderText("You're about to logout!");
+        alert.setContentText("Have you completed all your work?");
+        if (alert.showAndWait().get() == ButtonType.OK) {
+            TimerManager.getInstance().reset();
+            Parent root = FXMLLoader.load(getClass().getResource("loginPage.fxml"));
+            stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+            scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/loginPage.css").toExternalForm());
+            stage.setTitle("Login Page");
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.show();
+        }
+    }
+
     public void aiAgent(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("aiAgent.fxml"));
         Parent root = loader.load();
-
         AIAgentController aiController = loader.getController();
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+        aiController.setStage(stage);
         if (currentUsername != null) {
             aiController.setCurrentUser(currentUsername);
         }
 
-        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        Scene scene = new Scene(root);
+        scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/aiAgent.css").toExternalForm());
         stage.setTitle("AI Study Assistant");
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.show();
+    }
+
+    public void productivity(ActionEvent event) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("productivity.fxml"));
+        Parent root = loader.load();
+        Productivity productivity = loader.getController();
+        stage = (Stage) ((MenuItem) event.getSource()).getParentPopup().getOwnerWindow();
+        productivity.setStage(stage);
+        if (currentUsername != null) {
+            productivity.setCurrentUsername(currentUsername);
+        }
+
+        scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/com/example/chronopanthers/productivity.css").toExternalForm());
+        stage.setTitle("Productivity Tracker");
         stage.setScene(scene);
         stage.setResizable(false);
         stage.show();
