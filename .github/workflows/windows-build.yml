@@ -43,17 +43,7 @@ jobs:
 
       - name: Package with jpackage
         run: |
-          jpackage ^
-            --type exe ^
-            --name ChronoPanthers ^
-            --input target ^
-            --main-jar ChronoPanthers-1.0-SNAPSHOT.jar ^
-            --main-class com.example.chronopanthers.ChronoPanthers ^
-            --java-options "--module-path lib\javafx\lib --add-modules javafx.controls,javafx.fxml" ^
-            --dest dist ^
-            --icon src\main\resources\cp.ico ^
-            --app-version 1.0 ^
-            --verbose
+          jpackage --type exe --name ChronoPanthers --input target --main-jar ChronoPanthers-1.0-SNAPSHOT.jar --main-class com.example.chronopanthers.ChronoPanthers --java-options "--module-path lib\javafx\lib --add-modules javafx.controls,javafx.fxml" --dest dist --icon src\main\resources\cp.ico --app-version 1.0 --verbose
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
