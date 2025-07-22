@@ -27,8 +27,8 @@ jobs:
         run: |
           curl -L -o javafx.zip https://download2.gluonhq.com/openjfx/24/openjfx-24_windows-x64_bin-sdk.zip
           tar -xf javafx.zip
-          mkdir lib\javafx
-          move javafx-sdk-24 lib\javafx
+          mkdir lib
+          move javafx-sdk-24\lib lib\javafx
 
       - name: Set up WiX Toolset
         run: choco install wixtoolset -y
@@ -41,9 +41,15 @@ jobs:
           echo SUPABASE_JDBC_URI=$env:SUPABASE_JDBC_URI > target/.env
           echo OPENROUTER_API_KEY=$env:OPENROUTER_API_KEY >> target/.env
 
+      - name: Generate custom runtime image
+        run: |
+          jlink --module-path "lib/javafx;$Env:JAVA_HOME/jmods" `
+                --add-modules javafx.controls,javafx.fxml `
+                --output runtime
+
       - name: Package with jpackage
         run: |
-          jpackage --type exe --name ChronoPanthers --input target --main-jar ChronoPanthers-1.0-SNAPSHOT.jar --main-class com.example.chronopanthers.ChronoPanthers --java-options "--module-path lib\javafx\lib --add-modules javafx.controls,javafx.fxml" --dest dist --icon src\main\resources\cp.ico --app-version 1.0 --verbose
+          jpackage --type exe --name ChronoPanthers --input target --main-jar ChronoPanthers-1.0-SNAPSHOT.jar --main-class com.example.chronopanthers.ChronoPanthers --runtime-image runtime --dest dist --icon src\main\resources\cp.ico --app-version 1.0 --verbose
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
