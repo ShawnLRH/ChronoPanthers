@@ -21,14 +21,14 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: '21' # Use your version here
+          java-version: '24' # align with JavaFX version
 
       - name: Download JavaFX SDK
         run: |
           curl -L -o javafx.zip https://download2.gluonhq.com/openjfx/24/openjfx-24_windows-x64_bin-sdk.zip
           tar -xf javafx.zip
-          mkdir lib
-          move javafx-sdk-24\lib lib\javafx
+          mkdir lib\javafx
+          move javafx-sdk-24\lib\* lib\javafx\
 
       - name: Set up WiX Toolset
         run: choco install wixtoolset -y
